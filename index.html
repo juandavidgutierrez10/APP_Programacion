@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programación · 1.º DAW</title>
+<meta name="description" content="Apuntes interactivos de Programación (Java) con modo tutor y autoevaluación.">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-modo="aprobar">
+<div id="app"><noscript>Esta app necesita JavaScript activado en el navegador.</noscript></div>
+
+<script src="config.js"></script>
+<script>
+/* Registro de unidades y carga del contenido de las unidades NO bloqueadas (ver GUIA_PROFESOR.md). */
+window.UNIDADES = {};
+window.registrarUnidad = function (u) { window.UNIDADES[u.id] = u; };
+(window.CONFIG.unidades || []).forEach(function (u) {
+  if (u.estado !== 'bloqueada' && u.archivo) document.write('<script src="' + u.archivo + '"><\/script>');
+});
+</script>
+<script src="js/java-sim.js"></script>
+<script src="js/java-run.js"></script>
+<script src="js/util.js"></script>
+<script src="js/estado.js"></script>
+<script src="js/bloques.js"></script>
+<script src="js/tutor.js"></script>
+<script src="js/autoeval.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
