@@ -106,10 +106,28 @@ const mlen = (y, m) => [31, leap(y) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 3
 const toEpoch = (y, m, d) => Math.round(Date.UTC(y, m - 1, d) / 864e5) + (y >= 0 && y < 100 ? Math.round((Date.UTC(2000, 0, 1) - Date.UTC(2000, 0, 1)) / 864e5) : 0);
 function ymd(ep) { const dt = new Date(ep * 864e5); return [dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate()]; }
 const p2 = n => String(n).padStart(2, '0');
-function fmtDate(ep, pat) {
-  const [y, m, d] = ymd(ep); let out = '', i = 0;
-  while (i < pat.length) { const c = pat[i]; let j = i; while (j < pat.length && pat[j] === c) j++; const n = j - i;
-    if (c === 'd') out += n >= 2 ? p2(d) : d; else if (c === 'M') out += n >= 2 ? p2(m) : m; else if (c === 'y' || c === 'u') out += n === 2 ? p2(y % 100) : String(y).padStart(n, '0'); else if (/[A-Za-z]/.test(c)) throw unsup("el patrón de fecha '" + c + "'"); else out += pat.slice(i, j); i = j; }
+const DIAS = { ES: ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'], US: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] };
+const DIAS3 = { ES: ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'], US: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] };
+const MESES = { ES: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'], US: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] };
+const MESES3 = { ES: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'], US: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] };
+function fmtDate(ep, pat, loc) {
+  loc = loc || 'ES'; const [y, m, d] = ymd(ep); let out = '', i = 0;
+  while (i < pat.length) {
+    const c = pat[i];
+    if (c === "'") { // texto literal entre comillas simples ('' = una comilla)
+      if (pat[i + 1] === "'") { out += "'"; i += 2; continue; }
+      let j = i + 1, s = ''; while (j < pat.length) { if (pat[j] === "'") { if (pat[j + 1] === "'") { s += "'"; j += 2; continue; } break; } s += pat[j++]; }
+      out += s; i = j + 1; continue;
+    }
+    let j = i; while (j < pat.length && pat[j] === c) j++; const n = j - i;
+    if (c === 'd') out += n >= 2 ? p2(d) : d;
+    else if (c === 'M' || c === 'L') out += n === 1 ? m : n === 2 ? p2(m) : n === 3 ? MESES3[loc][m - 1] : MESES[loc][m - 1];
+    else if (c === 'y' || c === 'u') out += n === 2 ? p2(y % 100) : String(y).padStart(n, '0');
+    else if (c === 'E') { const wd = (((ep + 3) % 7) + 7) % 7; out += n <= 3 ? DIAS3[loc][wd] : DIAS[loc][wd]; }
+    else if (/[A-Za-z]/.test(c)) throw unsup("el patrón de fecha '" + c + "'");
+    else out += pat.slice(i, j);
+    i = j;
+  }
   return out;
 }
 function parseDate(rt, text, pat) {
@@ -362,11 +380,13 @@ function run(src, stdin, opts) {
       const o = ev(left.obj, fr);
       if (o.t === 'null') throw jex('NullPointerException', 'Cannot assign field "' + left.name + '" because ' + describe(left.obj) + ' is null');
       if (o.t === 'obj' && o.nat === 'Point' && (left.name === 'x' || left.name === 'y')) return { get: () => o[left.name], set: v => { o[left.name] = coerce('int', 0, v); }, cur: () => o[left.name] };
-      if (o.t === 'obj' && o.f) { const f = fieldDecl(o.cls, left.name, o); if (!f) throw cerr('cannot find symbol: variable ' + left.name, left.line); return { get: () => o.f[left.name], set: v => { o.f[left.name] = coerce(f.type, f.dims, v); }, cur: () => o.f[left.name] }; }
+      if (o.t === 'obj' && o.f) { const f = fieldDecl(o.cls, left.name, o); if (!f) throw cerr('cannot find symbol: variable ' + left.name, left.line); if (o.cls && o.cls.decl) checkPriv(o.cls, left.name, fr, left.line); return { get: () => o.f[left.name], set: v => { o.f[left.name] = coerce(f.type, f.dims, v); }, cur: () => o.f[left.name] }; }
       if (o.t === 'array' && left.name === 'length') throw cerr('cannot assign a value to final variable length', left.line);
     }
     throw cerr('unexpected type', left.line);
   }
+  function fieldOwner(cls, name) { for (let c = cls; c; c = c.sup) if (c.decl) { const f = c.decl.fields.find(x => x.name === name && !x.static); if (f) return { f, cls: c }; } return null; }
+  const checkPriv = (cls, name, fr, line) => { const fo = fieldOwner(cls, name); if (fo && fo.f.priv && fr && fr.cls !== fo.cls) throw cerr(name + ' has private access in ' + fo.cls.name, line); };
   function fieldDecl(cls, name) { for (let c = cls; c; c = c.sup) if (c.decl) { const f = c.decl.fields.find(x => x.name === name && !x.static); if (f) return f; } return null; }
   const describe = n => n && n.k === 'name' ? '"' + n.name + '"' : n && n.k === 'call' ? 'the return value of "' + n.name + '()"' : n && n.k === 'field' ? '"' + (n.obj.k === 'name' ? n.obj.name + '.' : '') + n.name + '"' : '"<expr>"';
 
@@ -441,6 +461,7 @@ function run(src, stdin, opts) {
       throw cerr('cannot find symbol: variable ' + cn, n.line);
     }
     const o = ev(n.obj, fr);
+    if (o.t === 'obj' && o.cls && o.cls.decl) checkPriv(o.cls, n.name, fr, n.line);
     if (o.t === 'array' && n.name === 'length') return I(o.a.length);
     if (o.t === 'null') throw jex('NullPointerException', 'Cannot read field "' + n.name + '" because ' + describe(n.obj) + ' is null');
     if (o.t === 'obj' && o.nat === 'Point' && (n.name === 'x' || n.name === 'y')) return o[n.name];
@@ -499,11 +520,12 @@ function run(src, stdin, opts) {
     if (n.obj.k === 'field' && n.obj.obj.k === 'name' && n.obj.obj.name === 'System' && (n.obj.name === 'out' || n.obj.name === 'err') && !lookupName('System', fr)) return printCall(n.obj.name === 'err', n.name, args, n);
     if (n.obj.k === 'name' && !lookupName(n.obj.name, fr)) {
       const ci = userCls.get(n.obj.name);
-      if (ci) { const f = findMethod(ci, n.name, args); if (!f) throw cerr('cannot find symbol: method ' + n.name, n.line); if (!f.m.static) throw cerr('non-static method ' + n.name + '() cannot be referenced from a static context', n.line); return invoke(f.m, f.cls, null, args); }
+      if (ci) { const f = findMethod(ci, n.name, args); if (!f) throw cerr('cannot find symbol: method ' + n.name, n.line); if (!f.m.static) throw cerr('non-static method ' + n.name + '() cannot be referenced from a static context', n.line); if (f.m.priv && f.cls !== fr.cls) throw cerr(n.name + '(' + f.m.params.map(p => p.type).join(',') + ') has private access in ' + f.cls.name, n.line); return invoke(f.m, f.cls, null, args); }
       return staticCall(n.obj.name, n.name, args, n);
     }
     const target = ev(n.obj, fr); curLine = n.line;
     if (target.t === 'null') throw jex('NullPointerException', 'Cannot invoke "' + (n.obj.k === 'name' && lookupName(n.obj.name, fr) && lookupName(n.obj.name, fr).s ? lookupName(n.obj.name, fr).s.ty : 'Object') + '.' + n.name + '()" because ' + describe(n.obj) + ' is null');
+    if (target.t === 'obj' && target.cls && target.cls.decl) { const f = findMethod(target.cls, n.name, args); if (f && f.m.priv && f.cls !== fr.cls) throw cerr(n.name + '(' + f.m.params.map(p => p.type).join(',') + ') has private access in ' + f.cls.name, n.line); }
     return objMethod(target, n.name, args, n);
   }
   function printCall(err, name, args, n) {
@@ -654,7 +676,7 @@ function run(src, stdin, opts) {
       case 'equals': return B(a[0].t === 'obj' && a[0].nat === 'Date' && a[0].d === t.d);
       case 'compareTo': return I(t.d - a[0].d); case 'toString': return ST(toStr(t)); case 'withDayOfMonth': return mkDate(toEpoch(y, m, Number(a[0].v)));
       case 'toEpochDay': return L(t.d); case 'hashCode': return I(t.d);
-      case 'format': return ST(fmtDate(t.d, a[0].pat));
+      case 'format': return ST(fmtDate(t.d, a[0].pat, a[0].loc));
     }
     throw cerr('cannot find symbol: method ' + name + ' en LocalDate', n.line);
   }
@@ -737,8 +759,8 @@ function run(src, stdin, opts) {
         case 'parse': { const [y, m, d] = parseDate(rt, a[0].v, a[1] ? a[1].pat : null); return mkDate(toEpoch(y, m, d)); }
         case 'ofEpochDay': return mkDate(Number(a[0].v));
       } break;
-      case 'DateTimeFormatter': if (name === 'ofPattern') return { t: 'obj', nat: 'Fmt', pat: a[0].v }; break;
-      case 'Locale': break;
+      case 'DateTimeFormatter': if (name === 'ofPattern') return { t: 'obj', nat: 'Fmt', pat: a[0].v, loc: a[1] && a[1].kind === 'Locale' ? a[1].name : 'ES' }; break;
+      case 'Locale': if (name === 'forLanguageTag') return mkEnum('Locale', /^es/i.test(a[0].v) ? 'ES' : 'US'); break;
       case 'List': case 'Map': case 'Set': case 'Optional': case 'Files': case 'Paths': throw unsup('la clase ' + cn, n.line);
     }
     if (!KNOWN_CLASSES.has(cn) && !userCls.has(cn)) throw cerr('cannot find symbol: variable ' + cn, n.line);

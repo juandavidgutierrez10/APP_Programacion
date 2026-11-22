@@ -15,12 +15,12 @@ window.CONFIG = {
   asignatura: "Programación",
   curso: "1.º DAW",
   centro: "IES D. Antonio Hellín Costa",
-  version: "1.0",
+  version: "1.1",
   unidades: [
     { id: "ut1", estado: "repaso", archivo: "contenido/ut1.js" },
     { id: "ut2", estado: "repaso", archivo: "contenido/ut2.js" },
-    { id: "ut3", estado: "actual", archivo: "contenido/ut3.js" },
-    { id: "ut4", estado: "bloqueada", titulo: "UT4. Programación organizada en clases", archivo: "contenido/ut4.js" },
+    { id: "ut3", estado: "repaso", archivo: "contenido/ut3.js" },
+    { id: "ut4", estado: "actual", archivo: "contenido/ut4.js" },
     { id: "ut5", estado: "bloqueada", titulo: "UT5. Entrada y salida de datos", archivo: "contenido/ut5.js" }
   ]
 };

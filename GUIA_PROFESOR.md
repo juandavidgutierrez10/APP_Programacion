@@ -29,7 +29,23 @@ Cada unidad tiene un `estado`:
 | `"actual"` | abierta y destacada en portada |
 | `"bloqueada"` | solo se ve el título; **el archivo ni se carga** |
 
-Para abrir la UT4: cambia `"bloqueada"` por `"actual"` en su línea, y crea `contenido/ut4.js`. Haz commit y en un minuto está publicado.
+### Ir desbloqueando unidades, paso a paso
+
+Hay un único cambio por unidad: la línea de esa unidad en `config.js`. El fichero `contenido/utN.js` ya existe para UT1-UT5.
+
+1. **Al empezar un tema:** pon ese tema en `"actual"` y el anterior en `"repaso"`. Ejemplo para trabajar la UT5:
+   ```js
+   { id: "ut4", estado: "repaso", archivo: "contenido/ut4.js" },
+   { id: "ut5", estado: "actual", archivo: "contenido/ut5.js" }
+   ```
+2. **Si quieres adelantar un tema pero no destacarlo:** `"repaso"` lo abre sin destacarlo.
+3. **Para volver a cerrarlo:** `"bloqueada"` (necesita un `titulo` en la línea para mostrarlo en la portada; ya está puesto en UT5).
+4. Guarda, haz commit y push (o, sin GitHub, vuelve a copiar la carpeta). En GitHub Pages tarda ~1 minuto; el alumno recarga la página con Ctrl+F5.
+5. El progreso de los alumnos **no se pierde** al cambiar estados.
+
+Estado actual de esta versión: UT1 y UT2 «repaso», UT3 «repaso», **UT4 «actual»**, UT5 «bloqueada».
+
+**UT6-UT9:** todavía no existen (no hay apuntes ni contenido). Cuando los tengas: crea `contenido/ut6.js` (copiando el formato de `ut4.js`), añade la línea `{ id: "ut6", estado: "bloqueada", titulo: "UT6. ...", archivo: "contenido/ut6.js" }` en `config.js`, y desbloquéala cuando toque.
 
 > **Ojo:** «bloqueada» no es seguridad. Si no quieres que el contenido sea visible, **no subas todavía su `.js`** al repositorio.
 
@@ -95,7 +111,9 @@ Por unidad: +1 acierto, −1/3 fallo, 0 en blanco. Saca `testN` preguntas al aza
 Es un subconjunto escrito desde cero y contrastado con Java 21 real (`tests/diff.js`).
 
 - Sí: tipos primitivos, String, arrays (también 2D), `Scanner`, `Math`, `Random` (semilla), `ArrayList`/`List`, `Arrays`, `printf`/`String.format` (con coma decimal, locale es_ES), clases simples, excepciones, `switch` clásico y con flechas.
-- **No:** comprobación de *checked exceptions*, `BigDecimal`, `Map`, `Set`, `enum`, `record`, lambdas/streams, clases internas, hilos.
+- Desde la v1.1: bloques de texto `"""`, `LocalDate`/`LocalDateTime` con `DateTimeFormatter` (incluidos `EEEE`/`MMMM` y `Locale`), y error de **acceso a miembros `private`** desde otra clase.
+- **No:** comprobación de *checked exceptions*, `BigDecimal`, `Map`, `Set`, `enum`, `record`, lambdas/streams, clases internas, hilos, `List.of`, **ficheros** (`File`, `Files`, `FileReader`…) ni **Swing**.
+- **UT5:** el código de ficheros y de Swing no se ejecuta en la app (hay que probarlo en el IDE): se estudia con tests, ordenar, huecos, relacionar, preguntas abiertas y prácticas guiadas. Todo ese código está compilado con `javac` al generar el contenido.
 - Si usas `Scanner`, `Random`, `ArrayList`, etc. **sin `import`**, da error de compilación (como en Java). Esa comprobación cubre una lista fija de clases.
 - Si algo no está soportado, la app lo dice y sugiere probarlo en el IDE.
 
@@ -107,14 +125,15 @@ Requiere Node.js (y `java` solo para `--java`):
 node tests/validar_contenido.js            # todas las unidades
 node tests/validar_contenido.js ut3        # una
 node tests/validar_contenido.js ut3 --java # además contrasta salidas con Java real
+node tests/ejecutables.js ut5              # ejecuta todo el código «ejecutable» de la unidad en el simulador y en Java real
 node tests/diff.js                         # contrasta el simulador con Java real
 ```
 
 Revisa: índices de respuesta, nº de opciones, filas de traza, cobertura del tutor (`cubre`), `sec` del banco, tamaño mínimo del banco, que cada solución pase sus pruebas y que el código inicial no las pase ya.
 
-## 7. Añadir la UT4
+## 7. Añadir una unidad nueva (UT6 en adelante)
 
-1. Copia `contenido/ut3.js` como `contenido/ut4.js` y sustituye el contenido manteniendo el formato.
-2. En `config.js`, cambia el estado a `"actual"` (y la UT3 a `"repaso"`).
-3. Ejecuta `node tests/validar_contenido.js ut4`.
-4. Commit y push.
+1. Copia `contenido/ut4.js` como `contenido/ut6.js` y sustituye el contenido manteniendo el formato (sección 4).
+2. En `config.js`, añade su línea (empieza en `"bloqueada"` con `titulo`).
+3. Ejecuta `node tests/validar_contenido.js ut6` y, si hay código ejecutable, `node tests/ejecutables.js ut6`.
+4. Commit y push; cuando toque, cámbiala a `"actual"`.

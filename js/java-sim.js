@@ -34,7 +34,19 @@ function tokenize(src) {
       push('num', v, { nt: t }); i += m[0].length; continue;
     }
     if (c === '"') {
-      if (src.startsWith('"""', i)) throw unsup('los bloques de texto """', line);
+      if (src.startsWith('"""', i)) { // bloque de texto
+        const mo = /^"""[ \t]*\r?\n/.exec(src.slice(i)); if (!mo) throw cerr('illegal text block open delimiter sequence, missing line terminator', line);
+        let j = i + mo[0].length, raw = '';
+        while (j < n && !src.startsWith('"""', j)) { if (src[j] === '\\') { raw += src[j] + (src[j + 1] || ''); j += 2; } else raw += src[j++]; }
+        if (j >= n) throw cerr('unclosed text block', line);
+        const lines = raw.split(/\r?\n/); const lastIsDelim = /^[ \t]*$/.test(lines[lines.length - 1]);
+        const sig = lines.filter((l, k) => k === lines.length - 1 ? true : l.trim() !== '');
+        const ind = Math.min(...sig.map(l => l.length - l.replace(/^[ \t]+/, '').length));
+        let body = lines.map((l, k) => (l.trim() === '' && k !== lines.length - 1 ? '' : l.slice(ind)).replace(/[ \t]+$/, '')).join('\n');
+        body = body.replace(/\\\n/g, '');
+        let s2 = ''; for (let q = 0; q < body.length; q++) { if (body[q] === '\\') { const e = body[++q]; if (e === 'n') s2 += '\n'; else if (e === 't') s2 += '\t'; else if (e === 'r') s2 += '\r'; else if (e === 's') s2 += ' '; else if (e === '"' || e === '\\' || e === "'") s2 += e; else throw cerr('illegal escape character', line); } else s2 += body[q]; }
+        push('str', s2); line += raw.split('\n').length - 1 + 1; i = j + 3; continue;
+      }
       let j = i + 1, s = '';
       while (j < n && src[j] !== '"') {
         if (src[j] === '\n') throw cerr('unclosed string literal', line);
@@ -336,13 +348,13 @@ function parse(src) {
       if (isOp('(')) {
         const params = parseParams(); skipThrows(); let body = null;
         if (isOp('{')) body = parseBlock(); else expect(';');
-        cls.methods.push({ name: mname, params, body, static: m.has('static'), abstract: !body, ret: ty, line: nameTok.line });
+        cls.methods.push({ name: mname, params, body, static: m.has('static'), priv: m.has('private'), abstract: !body, ret: ty, line: nameTok.line });
       } else {
         let dims = ty.dims; while (isOp('[') && isOp(']', 1)) { p += 2; dims++; }
         let init = null; const decls = [];
         const one = () => { init = null; if (accept('=')) init = isOp('{') ? parseArrayInit({ name: ty.name, dims }) : parseExpr(); };
-        one(); cls.fields.push({ name: mname, type: ty.name, dims, init, static: m.has('static') || cls.iface, final: m.has('final') || cls.iface, line: nameTok.line });
-        while (accept(',')) { const n2 = ident(); one(); cls.fields.push({ name: n2, type: ty.name, dims, init, static: m.has('static'), final: m.has('final'), line: nameTok.line }); }
+        one(); cls.fields.push({ name: mname, type: ty.name, dims, init, static: m.has('static') || cls.iface, final: m.has('final') || cls.iface, priv: m.has('private'), line: nameTok.line });
+        while (accept(',')) { const n2 = ident(); one(); cls.fields.push({ name: n2, type: ty.name, dims, init, static: m.has('static'), final: m.has('final'), priv: m.has('private'), line: nameTok.line }); }
         expect(';');
       }
     }
