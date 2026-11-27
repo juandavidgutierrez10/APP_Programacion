@@ -511,7 +511,9 @@ function run(src, stdin, opts) {
     curLine = n.line; tick(n.line);
     const args = n.args.map(a => ev(a, fr)); curLine = n.line;
     if (n.obj === null) {
-      const f = findMethod(fr.cls, n.name, args);
+      let f = findMethod(fr.cls, n.name, args);
+      /* llamada sin objeto dentro de un método de instancia: es polimórfica (this), salvo métodos private */
+      if (f && !f.m.static && !f.m.priv && fr.self && fr.self.t === 'obj' && fr.self.cls && fr.self.cls !== fr.cls) { const g = findMethod(fr.self.cls, n.name, args); if (g && !g.m.static) f = g; }
       if (f) { if (!f.m.static && !fr.self) throw cerr('non-static method ' + n.name + '(' + f.m.params.map(p => p.type).join(',') + ') cannot be referenced from a static context', n.line); return invoke(f.m, f.cls, f.m.static ? null : fr.self, args); }
       if (hasMethodName(fr.cls, n.name)) throw cerr('method ' + n.name + ' cannot be applied to given types', n.line);
       throw cerr('cannot find symbol: method ' + n.name, n.line);

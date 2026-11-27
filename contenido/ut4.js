@@ -3132,6 +3132,1875 @@ public class App {
     },
 
     {
+      id: "ut4-taller",
+      titulo: "Taller práctico: composición y herencia",
+      resumen: "19 ejercicios ordenados de más a menos guiados para dominar «tiene un» y «es un»: del reconocimiento al diseño propio.",
+      bloques: [
+        {
+          t: "texto",
+          md: `Esta sección es **pura práctica**. Son 19 ejercicios sobre las dos relaciones más importantes de la programación orientada a objetos: la **composición** («tiene un») y la **herencia** («es un»). Están ordenados por dificultad y **cada nivel te da menos ayuda que el anterior**:
+
+| Nivel | Ejercicios | Qué te damos |
+|---|---|---|
+| ★☆☆☆ **Guiado** | 1 a 5 | Casi todo hecho: clasificar, rellenar huecos, predecir y completar con los pasos numerados |
+| ★★☆☆ **Semiguiado** | 6 a 10 | El esqueleto de las clases; tú escribes los cuerpos |
+| ★★★☆ **Poco guiado** | 11 a 15 | El enunciado y el \`main\`; tú escribes las clases o los métodos |
+| ★★★★ **Diseño propio** | 16 a 19 | Solo el problema y la salida esperada; **tú decides las clases** |
+
+**Cómo sacarles partido:** no mires la solución hasta haber probado de verdad; usa las pistas de una en una; y antes de escribir código **dibuja las cajas y las flechas** de los objetos en papel. Si un ejercicio de un nivel te cuesta mucho, vuelve a hacer uno del nivel anterior: es normal.`
+        },
+        {
+          t: "aviso",
+          tipo: "clave",
+          md: `**Las dos preguntas que lo resuelven casi todo:**
+1. ¿**A es un B**? (un kayak *es un* equipo) → **herencia**: \`class Kayak extends Equipo\`.
+2. ¿**A tiene un B**? (una reserva *tiene un* cliente) → **composición**: una **propiedad** de tipo \`Cliente\` dentro de \`Reserva\`.
+
+Si dudas, **composición**. Y cuando algo «cambia según el tipo» (el precio de un kayak y el de una tabla), piensa en **sobrescribir** un método en lugar de escribir un \`if\` por tipo.`
+        },
+        {
+          t: "texto",
+          md: `## Nivel 1 · Guiado ★☆☆☆
+Aquí solo tienes que **reconocer**, **completar** y **predecir**.`
+        },
+        {
+          t: "relacionar",
+          p: "**Ejercicio 1 · ★☆☆☆ · ¿Es un o tiene un?** Decide la relación que hay entre cada par de clases.",
+          pares: [
+            ["Kayak y Equipo", "herencia (es un)"],
+            ["Reserva y Cliente", "composición (tiene un)"],
+            ["Velero y Embarcación", "herencia (es un)"],
+            ["Cliente y Dirección", "composición (tiene un)"],
+            ["Monitor y Empleado", "herencia (es un)"],
+            ["Alquiler y Equipo", "composición (tiene un)"]
+          ],
+          e: "Prueba con la frase: «un kayak *es un* equipo» suena bien; «un alquiler *es un* equipo» suena rara, pero «un alquiler *tiene un* equipo» sí."
+        },
+        {
+          t: "huecos",
+          p: "**Ejercicio 2 · ★☆☆☆ · Un kayak es un equipo.** Completa la subclase: debe heredar de `Equipo`, llamar al constructor de la clase base y sobrescribir el cálculo del precio reutilizando el de la base.",
+          codigo: `class Equipo {
+    private String nombre;
+    private double precioHora;
+
+    public Equipo(String nombre, double precioHora) {
+        this.nombre = nombre;
+        this.precioHora = precioHora;
+    }
+
+    public double calcularPrecio(int horas) {
+        return precioHora * horas;
+    }
+}
+
+class Kayak {{extends}} Equipo {
+    private int plazas;
+
+    public Kayak(String nombre, double precioHora, int plazas) {
+        {{super}}(nombre, precioHora);
+        this.plazas = plazas;
+    }
+
+    {{@Override}}
+    public double calcularPrecio(int horas) {
+        return {{super}}.calcularPrecio(horas) + 2.0 * (plazas - 1) * horas;
+    }
+}`,
+          e: "`extends` crea la herencia; `super(...)` inicializa la parte heredada (debe ser lo primero del constructor); `@Override` avisa al compilador de que sobrescribes; y `super.calcularPrecio(...)` reutiliza el cálculo de la base."
+        },
+        {
+          t: "predecir",
+          p: "**Ejercicio 3 · ★☆☆☆ · ¿Qué muestra?** Cuidado con `super` y con el tipo real del objeto (la variable es `Embarcacion`, pero el objeto es un `Velero`).",
+          code: `class Embarcacion {
+    protected String nombre;
+
+    public Embarcacion(String nombre) { this.nombre = nombre; }
+
+    public String describir() { return "Embarcación " + nombre; }
+
+    public double tarifa() { return 10; }
+}
+
+class Velero extends Embarcacion {
+    private double vela;
+
+    public Velero(String nombre, double vela) {
+        super(nombre);
+        this.vela = vela;
+    }
+
+    @Override
+    public String describir() { return super.describir() + " (velero)"; }
+
+    @Override
+    public double tarifa() { return super.tarifa() + 1.5 * vela; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Embarcacion e1 = new Embarcacion("Aurora");
+        Embarcacion e2 = new Velero("Brisa", 20);
+        System.out.println(e1.describir());
+        System.out.println(e2.describir());
+        System.out.println(e1.tarifa());
+        System.out.println(e2.tarifa());
+    }
+}`,
+          salida: `Embarcación Aurora
+Embarcación Brisa (velero)
+10.0
+40.0`,
+          e: "Al llamar a un método **se ejecuta la versión del objeto real** (polimorfismo), no la del tipo de la variable. `e2` es un `Velero`, así que usa su `describir` y su `tarifa`; y `super.describir()` añade lo de la clase base."
+        },
+        {
+          t: "predecir",
+          p: "**Ejercicio 4 · ★☆☆☆ · Dos reservas, un solo cliente.** Dibuja las cajas y las flechas antes de contestar: ¿cuántos objetos `Cliente` hay?",
+          code: `class Cliente {
+    String nombre;
+    boolean socio;
+
+    Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+}
+
+class Reserva {
+    Cliente cliente;
+    int personas;
+
+    Reserva(Cliente cliente, int personas) {
+        this.cliente = cliente;
+        this.personas = personas;
+    }
+
+    String resumen() {
+        return cliente.nombre + (cliente.socio ? " (socio)" : "") + " x" + personas;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente laura = new Cliente("Laura", false);
+        Reserva r1 = new Reserva(laura, 2);
+        Reserva r2 = new Reserva(laura, 4);
+        laura.socio = true;
+        System.out.println(r1.resumen());
+        System.out.println(r2.resumen());
+
+        Cliente otra = new Cliente("Laura", true);
+        Reserva r3 = new Reserva(otra, 1);
+        System.out.println(r1.cliente == r2.cliente);
+        System.out.println(r1.cliente == r3.cliente);
+        System.out.println(r1.cliente.nombre.equals(r3.cliente.nombre));
+    }
+}`,
+          salida: `Laura (socio) x2
+Laura (socio) x4
+true
+false
+true`,
+          e: "La composición guarda una **referencia** (una flecha), no una copia: `r1` y `r2` apuntan al **mismo** `Cliente`, así que el cambio de `laura` se ve en las dos. `otra` es un objeto distinto aunque tenga el mismo nombre: `==` compara referencias y `equals` compara el contenido del `String`."
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 5 · ★☆☆☆ · Tu primera composición.** Completa \`Reserva\` siguiendo los pasos numerados: una reserva **tiene un** \`Cliente\`. El total es \`precioPersona × personas\`, con un 10 % de descuento si el cliente es socio. Fíjate en que \`Reserva\` no repite el nombre del cliente: se lo pide a \`Cliente\`.
+
+Debe mostrar:
+\`\`\`
+Reserva de Laura Martínez: 3 personas, 81,00 euros
+Reserva de Pedro Ruiz: 3 personas, 90,00 euros
+\`\`\``,
+          inicial: `class Cliente {
+    private String nombre;
+    private boolean socio;
+
+    public Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+
+    public String getNombre() { return nombre; }
+    public boolean isSocio() { return socio; }
+}
+
+class Reserva {
+    // 1. Propiedad privada: un Cliente
+    private double precioPersona;
+    private int personas;
+
+    // 2. Constructor: Reserva(Cliente cliente, double precioPersona, int personas)
+
+    public double calcularTotal() {
+        double total = precioPersona * personas;
+        // 3. Si el cliente es socio (usa su getter), resta el 10 %
+        return total;
+    }
+
+    @Override
+    public String toString() {
+        // 4. "Reserva de <nombre del cliente>: <personas> personas, <total con 2 decimales> euros"
+        return "";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente laura = new Cliente("Laura Martínez", true);
+        Cliente pedro = new Cliente("Pedro Ruiz", false);
+        System.out.println(new Reserva(laura, 30.0, 3));
+        System.out.println(new Reserva(pedro, 30.0, 3));
+    }
+}`,
+          tests: [
+            {
+              out: `Reserva de Laura Martínez: 3 personas, 81,00 euros
+Reserva de Pedro Ruiz: 3 personas, 90,00 euros`
+            }
+          ],
+          pistas: [
+            "La propiedad es `private Cliente cliente;` y el constructor la asigna con `this.cliente = cliente;`.",
+            "Desde `Reserva` no puedes leer `socio` directamente (es privada): usa `cliente.isSocio()`.",
+            "El nombre se obtiene con `cliente.getNombre()`."
+          ],
+          solucion: `class Cliente {
+    private String nombre;
+    private boolean socio;
+
+    public Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+
+    public String getNombre() { return nombre; }
+    public boolean isSocio() { return socio; }
+}
+
+class Reserva {
+    private Cliente cliente;
+    private double precioPersona;
+    private int personas;
+
+    public Reserva(Cliente cliente, double precioPersona, int personas) {
+        this.cliente = cliente;
+        this.precioPersona = precioPersona;
+        this.personas = personas;
+    }
+
+    public double calcularTotal() {
+        double total = precioPersona * personas;
+        if (cliente.isSocio()) {
+            total = total * 0.90;
+        }
+        return total;
+    }
+
+    @Override
+    public String toString() {
+        return "Reserva de " + cliente.getNombre() + ": " + personas + " personas, "
+                + String.format("%.2f", calcularTotal()) + " euros";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente laura = new Cliente("Laura Martínez", true);
+        Cliente pedro = new Cliente("Pedro Ruiz", false);
+        System.out.println(new Reserva(laura, 30.0, 3));
+        System.out.println(new Reserva(pedro, 30.0, 3));
+    }
+}`
+        },
+        {
+          t: "texto",
+          md: `## Nivel 2 · Semiguiado ★★☆☆
+Te damos las clases con sus firmas; **los cuerpos los escribes tú**.`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 6 · ★★☆☆ · Excursiones de kayak.** Escribe la subclase \`ExcursionKayak\`. Tiene una \`dificultad\` (1 a 3) y suma **3 euros por nivel de dificultad y por persona** al precio base. Su \`describir()\` reutiliza el de la base y añade \` · dificultad N\`.
+
+Debe mostrar:
+\`\`\`
+Paseo en barco (25,00 euros/persona)
+Cuevas de Bahía (20,00 euros/persona) · dificultad 2
+100.0
+104.0
+\`\`\``,
+          inicial: `class Excursion {
+    private String nombre;
+    private double precioPersona;
+
+    public Excursion(String nombre, double precioPersona) {
+        this.nombre = nombre;
+        this.precioPersona = precioPersona;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int personas) {
+        return precioPersona * personas;
+    }
+
+    public String describir() {
+        return nombre + " (" + String.format("%.2f", precioPersona) + " euros/persona)";
+    }
+}
+
+class ExcursionKayak extends Excursion {
+    // TODO: propiedad dificultad
+    // TODO: constructor (nombre, precioPersona, dificultad)
+    // TODO: calcularPrecio(int personas) sobrescrito
+    // TODO: describir() sobrescrito
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Excursion normal = new Excursion("Paseo en barco", 25.0);
+        Excursion kayak = new ExcursionKayak("Cuevas de Bahía", 20.0, 2);
+        System.out.println(normal.describir());
+        System.out.println(kayak.describir());
+        System.out.println(normal.calcularPrecio(4));
+        System.out.println(kayak.calcularPrecio(4));
+    }
+}`,
+          tests: [
+            {
+              out: `Paseo en barco (25,00 euros/persona)
+Cuevas de Bahía (20,00 euros/persona) · dificultad 2
+100.0
+104.0`
+            }
+          ],
+          pistas: [
+            "`class ExcursionKayak extends Excursion` y, en el constructor, `super(nombre, precioPersona);` como primera línea.",
+            "`@Override public double calcularPrecio(int personas)` y dentro `super.calcularPrecio(personas) + ...`.",
+            "El texto de `describir` es `super.describir() + \" · dificultad \" + dificultad`."
+          ],
+          solucion: `class Excursion {
+    private String nombre;
+    private double precioPersona;
+
+    public Excursion(String nombre, double precioPersona) {
+        this.nombre = nombre;
+        this.precioPersona = precioPersona;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int personas) {
+        return precioPersona * personas;
+    }
+
+    public String describir() {
+        return nombre + " (" + String.format("%.2f", precioPersona) + " euros/persona)";
+    }
+}
+
+class ExcursionKayak extends Excursion {
+    private int dificultad;
+
+    public ExcursionKayak(String nombre, double precioPersona, int dificultad) {
+        super(nombre, precioPersona);
+        this.dificultad = dificultad;
+    }
+
+    @Override
+    public double calcularPrecio(int personas) {
+        return super.calcularPrecio(personas) + 3.0 * dificultad * personas;
+    }
+
+    @Override
+    public String describir() {
+        return super.describir() + " · dificultad " + dificultad;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Excursion normal = new Excursion("Paseo en barco", 25.0);
+        Excursion kayak = new ExcursionKayak("Cuevas de Bahía", 20.0, 2);
+        System.out.println(normal.describir());
+        System.out.println(kayak.describir());
+        System.out.println(normal.calcularPrecio(4));
+        System.out.println(kayak.calcularPrecio(4));
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 7 · ★★☆☆ · Composición en dos niveles.** Un \`Socio\` **tiene una** \`Direccion\`. Completa \`Socio\`: su \`toString()\` es \`nombre, calle (ciudad)\` (la dirección sabe mostrarse sola: reutiliza su \`toString\`), y \`mismaCiudad(Socio otro)\` indica si los dos viven en la misma ciudad sin distinguir mayúsculas. Se pide la ciudad **a través de la dirección**.
+
+Debe mostrar:
+\`\`\`
+Ana Gil, Calle Mayor 3 (Mazarrón)
+true
+false
+Cartagena
+\`\`\``,
+          inicial: `class Direccion {
+    private String calle;
+    private String ciudad;
+
+    public Direccion(String calle, String ciudad) {
+        this.calle = calle;
+        this.ciudad = ciudad;
+    }
+
+    public String getCiudad() { return ciudad; }
+
+    @Override
+    public String toString() { return calle + " (" + ciudad + ")"; }
+}
+
+class Socio {
+    private String nombre;
+    // TODO: propiedad direccion
+
+    // TODO: constructor Socio(String nombre, Direccion direccion)
+
+    // TODO: getCiudad() que devuelva la ciudad preguntándosela a la dirección
+
+    // TODO: mismaCiudad(Socio otro)
+
+    // TODO: toString()
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Socio ana = new Socio("Ana Gil", new Direccion("Calle Mayor 3", "Mazarrón"));
+        Socio luis = new Socio("Luis Sanz", new Direccion("Paseo del Puerto 8", "mazarrón"));
+        Socio eva = new Socio("Eva Ríos", new Direccion("Gran Vía 20", "Cartagena"));
+        System.out.println(ana);
+        System.out.println(ana.mismaCiudad(luis));
+        System.out.println(ana.mismaCiudad(eva));
+        System.out.println(eva.getCiudad());
+    }
+}`,
+          tests: [
+            {
+              out: `Ana Gil, Calle Mayor 3 (Mazarrón)
+true
+false
+Cartagena`
+            }
+          ],
+          pistas: [
+            "Concatenar un objeto con un texto llama automáticamente a su `toString()`: `nombre + \", \" + direccion`.",
+            "`getCiudad()` es `return direccion.getCiudad();`: delegas en el objeto que contienes.",
+            "Para comparar sin mayúsculas usa `equalsIgnoreCase`, no `==`."
+          ],
+          solucion: `class Direccion {
+    private String calle;
+    private String ciudad;
+
+    public Direccion(String calle, String ciudad) {
+        this.calle = calle;
+        this.ciudad = ciudad;
+    }
+
+    public String getCiudad() { return ciudad; }
+
+    @Override
+    public String toString() { return calle + " (" + ciudad + ")"; }
+}
+
+class Socio {
+    private String nombre;
+    private Direccion direccion;
+
+    public Socio(String nombre, Direccion direccion) {
+        this.nombre = nombre;
+        this.direccion = direccion;
+    }
+
+    public String getCiudad() { return direccion.getCiudad(); }
+
+    public boolean mismaCiudad(Socio otro) {
+        return getCiudad().equalsIgnoreCase(otro.getCiudad());
+    }
+
+    @Override
+    public String toString() { return nombre + ", " + direccion; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Socio ana = new Socio("Ana Gil", new Direccion("Calle Mayor 3", "Mazarrón"));
+        Socio luis = new Socio("Luis Sanz", new Direccion("Paseo del Puerto 8", "mazarrón"));
+        Socio eva = new Socio("Eva Ríos", new Direccion("Gran Vía 20", "Cartagena"));
+        System.out.println(ana);
+        System.out.println(ana.mismaCiudad(luis));
+        System.out.println(ana.mismaCiudad(eva));
+        System.out.println(eva.getCiudad());
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 8 · ★★☆☆ · Caza los dos errores.** Este programa **compila y se ejecuta, pero la salida no es la esperada**. Tiene **dos errores** (uno de herencia y otro de composición/constructores). Encuéntralos y arréglalos para que salga lo que se indica abajo. Pista general: \`@Override\` te habría avisado de uno de ellos.
+
+Debe mostrar:
+\`\`\`
+Brisa: 70.0 euros/hora
+Gaviota: 40.0 euros/hora
+\`\`\``,
+          inicial: `class Embarcacion {
+    private String nombre;
+
+    public Embarcacion(String nombre) { this.nombre = nombre; }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularTarifaHora() { return 10; }
+}
+
+class Velero extends Embarcacion {
+    private double vela;
+
+    public Velero(String nombre, double vela) {
+        super(nombre);
+        this.vela = vela;
+    }
+
+    public double calcularTarifasHora() { return 10 + 1.5 * vela; }
+}
+
+class Lancha extends Embarcacion {
+    private int potencia;
+
+    public Lancha(String nombre, int potencia) {
+        super(nombre);
+        potencia = potencia;
+    }
+
+    @Override
+    public double calcularTarifaHora() { return 10 + 0.2 * potencia; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Embarcacion[] flota = { new Velero("Brisa", 40), new Lancha("Gaviota", 150) };
+        for (Embarcacion e : flota) {
+            System.out.println(e.getNombre() + ": " + e.calcularTarifaHora() + " euros/hora");
+        }
+    }
+}`,
+          tests: [
+            {
+              out: `Brisa: 70.0 euros/hora
+Gaviota: 40.0 euros/hora`
+            }
+          ],
+          pistas: [
+            "Mira el nombre del método en `Velero`: ¿es exactamente igual que el de la clase base? Si no, **no sobrescribe: crea otro método distinto**.",
+            "En `Lancha`, la línea `potencia = potencia;` asigna el parámetro a sí mismo. ¿Qué le falta?",
+            "Escribe `@Override` encima del método de `Velero`: el compilador te dirá si de verdad sobrescribe."
+          ],
+          solucion: `class Embarcacion {
+    private String nombre;
+
+    public Embarcacion(String nombre) { this.nombre = nombre; }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularTarifaHora() { return 10; }
+}
+
+class Velero extends Embarcacion {
+    private double vela;
+
+    public Velero(String nombre, double vela) {
+        super(nombre);
+        this.vela = vela;
+    }
+
+    @Override
+    public double calcularTarifaHora() { return 10 + 1.5 * vela; }
+}
+
+class Lancha extends Embarcacion {
+    private int potencia;
+
+    public Lancha(String nombre, int potencia) {
+        super(nombre);
+        this.potencia = potencia;
+    }
+
+    @Override
+    public double calcularTarifaHora() { return 10 + 0.2 * potencia; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Embarcacion[] flota = { new Velero("Brisa", 40), new Lancha("Gaviota", 150) };
+        for (Embarcacion e : flota) {
+            System.out.println(e.getNombre() + ": " + e.calcularTarifaHora() + " euros/hora");
+        }
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 9 · ★★☆☆ · Un array de equipos distintos.** Escribe el método estático \`totalAlquiler(Equipo[] equipos, int horas)\`, que devuelve lo que cuesta alquilar **todos** los equipos durante esas horas. Tienes que llamar a \`calcularPrecio\` **sin preguntar de qué tipo es cada uno**: eso lo resuelve el polimorfismo.
+
+Debe mostrar:
+\`\`\`
+56.0
+81.5
+\`\`\``,
+          inicial: `class Equipo {
+    private String nombre;
+    private double precioHora;
+
+    public Equipo(String nombre, double precioHora) {
+        this.nombre = nombre;
+        this.precioHora = precioHora;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int horas) { return precioHora * horas; }
+}
+
+class Kayak extends Equipo {
+    private int plazas;
+
+    public Kayak(String nombre, double precioHora, int plazas) {
+        super(nombre, precioHora);
+        this.plazas = plazas;
+    }
+
+    @Override
+    public double calcularPrecio(int horas) {
+        return super.calcularPrecio(horas) + 2.0 * (plazas - 1) * horas;
+    }
+}
+
+class TablaPaddle extends Equipo {
+    public TablaPaddle(String nombre, double precioHora) { super(nombre, precioHora); }
+
+    @Override
+    public double calcularPrecio(int horas) { return super.calcularPrecio(horas) + 5.0; }
+}
+
+public class Main {
+    // TODO: static double totalAlquiler(Equipo[] equipos, int horas)
+
+    public static void main(String[] args) {
+        Equipo[] equipos = {
+            new Equipo("Chaleco", 3.5),
+            new Kayak("Kayak doble", 8.0, 2),
+            new TablaPaddle("Tabla", 12.0)
+        };
+        System.out.println(totalAlquiler(equipos, 2));
+        System.out.println(totalAlquiler(equipos, 3));
+    }
+}`,
+          tests: [
+            {
+              out: `56.0
+81.5`
+            }
+          ],
+          pistas: [
+            "Recorre el array con un for-each: `for (Equipo e : equipos)`.",
+            "Dentro del bucle, `total += e.calcularPrecio(horas);` sin ningún `if` ni `instanceof`."
+          ],
+          solucion: `class Equipo {
+    private String nombre;
+    private double precioHora;
+
+    public Equipo(String nombre, double precioHora) {
+        this.nombre = nombre;
+        this.precioHora = precioHora;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int horas) { return precioHora * horas; }
+}
+
+class Kayak extends Equipo {
+    private int plazas;
+
+    public Kayak(String nombre, double precioHora, int plazas) {
+        super(nombre, precioHora);
+        this.plazas = plazas;
+    }
+
+    @Override
+    public double calcularPrecio(int horas) {
+        return super.calcularPrecio(horas) + 2.0 * (plazas - 1) * horas;
+    }
+}
+
+class TablaPaddle extends Equipo {
+    public TablaPaddle(String nombre, double precioHora) { super(nombre, precioHora); }
+
+    @Override
+    public double calcularPrecio(int horas) { return super.calcularPrecio(horas) + 5.0; }
+}
+
+public class Main {
+    static double totalAlquiler(Equipo[] equipos, int horas) {
+        double total = 0;
+        for (Equipo e : equipos) {
+            total += e.calcularPrecio(horas);
+        }
+        return total;
+    }
+
+    public static void main(String[] args) {
+        Equipo[] equipos = {
+            new Equipo("Chaleco", 3.5),
+            new Kayak("Kayak doble", 8.0, 2),
+            new TablaPaddle("Tabla", 12.0)
+        };
+        System.out.println(totalAlquiler(equipos, 2));
+        System.out.println(totalAlquiler(equipos, 3));
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 10 · ★★☆☆ · Un pedido con líneas.** Un \`Pedido\` **tiene muchas** \`Linea\` (composición con una lista). Completa \`Pedido\`: \`anadir(Linea l)\`, \`total()\` (suma de los importes) y \`numeroLineas()\`. Su \`toString()\` muestra \`Pedido de <cliente>: N líneas, total T euros\`.
+
+Debe mostrar:
+\`\`\`
+Pedido de Club Náutico: 3 líneas, 277,75 euros
+3
+\`\`\``,
+          inicial: `import java.util.ArrayList;
+
+class Linea {
+    private String producto;
+    private int unidades;
+    private double precioUnitario;
+
+    public Linea(String producto, int unidades, double precioUnitario) {
+        this.producto = producto;
+        this.unidades = unidades;
+        this.precioUnitario = precioUnitario;
+    }
+
+    public double importe() { return unidades * precioUnitario; }
+}
+
+class Pedido {
+    private String cliente;
+    private ArrayList<Linea> lineas = new ArrayList<>();
+
+    public Pedido(String cliente) { this.cliente = cliente; }
+
+    // TODO: anadir(Linea l)
+    // TODO: total()
+    // TODO: numeroLineas()
+    // TODO: toString()
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Pedido p = new Pedido("Club Náutico");
+        p.anadir(new Linea("Chaleco", 4, 34.5));
+        p.anadir(new Linea("Gafas de buceo", 2, 24.9));
+        p.anadir(new Linea("Neopreno", 1, 89.95));
+        System.out.println(p);
+        System.out.println(p.numeroLineas());
+    }
+}`,
+          tests: [
+            {
+              out: `Pedido de Club Náutico: 3 líneas, 277,75 euros
+3`
+            }
+          ],
+          pistas: [
+            "`lineas.add(l)` añade; `lineas.size()` cuenta.",
+            "Para el total, recorre la lista con un for-each y suma `l.importe()`: **el pedido no calcula el importe de cada línea, se lo pide a ella**."
+          ],
+          solucion: `import java.util.ArrayList;
+
+class Linea {
+    private String producto;
+    private int unidades;
+    private double precioUnitario;
+
+    public Linea(String producto, int unidades, double precioUnitario) {
+        this.producto = producto;
+        this.unidades = unidades;
+        this.precioUnitario = precioUnitario;
+    }
+
+    public double importe() { return unidades * precioUnitario; }
+}
+
+class Pedido {
+    private String cliente;
+    private ArrayList<Linea> lineas = new ArrayList<>();
+
+    public Pedido(String cliente) { this.cliente = cliente; }
+
+    public void anadir(Linea l) { lineas.add(l); }
+
+    public double total() {
+        double suma = 0;
+        for (Linea l : lineas) {
+            suma += l.importe();
+        }
+        return suma;
+    }
+
+    public int numeroLineas() { return lineas.size(); }
+
+    @Override
+    public String toString() {
+        return "Pedido de " + cliente + ": " + numeroLineas() + " líneas, "
+                + String.format("%.2f", total()) + " euros";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Pedido p = new Pedido("Club Náutico");
+        p.anadir(new Linea("Chaleco", 4, 34.5));
+        p.anadir(new Linea("Gafas de buceo", 2, 24.9));
+        p.anadir(new Linea("Neopreno", 1, 89.95));
+        System.out.println(p);
+        System.out.println(p.numeroLineas());
+    }
+}`
+        },
+        {
+          t: "texto",
+          md: `## Nivel 3 · Poco guiado ★★★☆
+Aquí tienes el **enunciado y el \`main\`**. Decide tú las propiedades, los constructores y los métodos.`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 11 · ★★★☆ · La reserva de una excursión.** Escribe la clase \`Reserva\`: **tiene un** \`Cliente\` y **tiene una** \`Excursion\` (que puede ser una \`ExcursionKayak\`, sin que \`Reserva\` lo sepa) y un número de personas. Su \`calcularTotal()\` es el precio de la excursión para esas personas, con un 10 % de descuento si el cliente es socio. Su \`toString()\` es \`<cliente> → <excursión>: <total con 2 decimales> euros\` (usa el flecha \`→\` tal cual).
+
+Debe mostrar:
+\`\`\`
+Laura → Paseo en barco: 90,00 euros
+Pedro → Cuevas de Bahía: 78,00 euros
+70.2
+\`\`\``,
+          inicial: `class Cliente {
+    private String nombre;
+    private boolean socio;
+
+    public Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+
+    public String getNombre() { return nombre; }
+    public boolean isSocio() { return socio; }
+}
+
+class Excursion {
+    private String nombre;
+    private double precioPersona;
+
+    public Excursion(String nombre, double precioPersona) {
+        this.nombre = nombre;
+        this.precioPersona = precioPersona;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int personas) { return precioPersona * personas; }
+}
+
+class ExcursionKayak extends Excursion {
+    private int dificultad;
+
+    public ExcursionKayak(String nombre, double precioPersona, int dificultad) {
+        super(nombre, precioPersona);
+        this.dificultad = dificultad;
+    }
+
+    @Override
+    public double calcularPrecio(int personas) {
+        return super.calcularPrecio(personas) + 3.0 * dificultad * personas;
+    }
+}
+
+// TODO: escribe la clase Reserva
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente laura = new Cliente("Laura", true);
+        Cliente pedro = new Cliente("Pedro", false);
+        Excursion barco = new Excursion("Paseo en barco", 25.0);
+        Excursion cuevas = new ExcursionKayak("Cuevas de Bahía", 20.0, 2);
+        System.out.println(new Reserva(laura, barco, 4));
+        System.out.println(new Reserva(pedro, cuevas, 3));
+        System.out.println(new Reserva(laura, cuevas, 3).calcularTotal());
+    }
+}`,
+          tests: [
+            {
+              out: `Laura → Paseo en barco: 90,00 euros
+Pedro → Cuevas de Bahía: 78,00 euros
+70.2`
+            }
+          ],
+          pistas: [
+            "La propiedad de tipo `Excursion` puede guardar también una `ExcursionKayak`: es una `Excursion`.",
+            "No preguntes de qué tipo es la excursión: llama a `excursion.calcularPrecio(personas)` y se ejecutará la versión correcta."
+          ],
+          solucion: `class Cliente {
+    private String nombre;
+    private boolean socio;
+
+    public Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+
+    public String getNombre() { return nombre; }
+    public boolean isSocio() { return socio; }
+}
+
+class Excursion {
+    private String nombre;
+    private double precioPersona;
+
+    public Excursion(String nombre, double precioPersona) {
+        this.nombre = nombre;
+        this.precioPersona = precioPersona;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int personas) { return precioPersona * personas; }
+}
+
+class ExcursionKayak extends Excursion {
+    private int dificultad;
+
+    public ExcursionKayak(String nombre, double precioPersona, int dificultad) {
+        super(nombre, precioPersona);
+        this.dificultad = dificultad;
+    }
+
+    @Override
+    public double calcularPrecio(int personas) {
+        return super.calcularPrecio(personas) + 3.0 * dificultad * personas;
+    }
+}
+
+class Reserva {
+    private Cliente cliente;
+    private Excursion excursion;
+    private int personas;
+
+    public Reserva(Cliente cliente, Excursion excursion, int personas) {
+        this.cliente = cliente;
+        this.excursion = excursion;
+        this.personas = personas;
+    }
+
+    public double calcularTotal() {
+        double total = excursion.calcularPrecio(personas);
+        if (cliente.isSocio()) {
+            total = total * 0.90;
+        }
+        return total;
+    }
+
+    @Override
+    public String toString() {
+        return cliente.getNombre() + " → " + excursion.getNombre() + ": "
+                + String.format("%.2f", calcularTotal()) + " euros";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente laura = new Cliente("Laura", true);
+        Cliente pedro = new Cliente("Pedro", false);
+        Excursion barco = new Excursion("Paseo en barco", 25.0);
+        Excursion cuevas = new ExcursionKayak("Cuevas de Bahía", 20.0, 2);
+        System.out.println(new Reserva(laura, barco, 4));
+        System.out.println(new Reserva(pedro, cuevas, 3));
+        System.out.println(new Reserva(laura, cuevas, 3).calcularTotal());
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 12 · ★★★☆ · Herencia en tres niveles.** Una \`Persona\` tiene nombre. Un \`Empleado\` **es una** persona y además tiene un sueldo base. Un \`Monitor\` **es un** empleado y además cobra 12 euros por hora extra. Escribe \`Empleado\` y \`Monitor\` para que el \`main\` funcione: \`calcularSueldo()\` en \`Empleado\` devuelve el sueldo base, y en \`Monitor\` lo sobrescribe sumando las horas extra. Los \`toString\` encadenan con \`super.toString()\`: el de \`Empleado\` añade \` · sueldo X euros\` y el de \`Monitor\` añade \` · N h extra\`.
+
+Debe mostrar:
+\`\`\`
+Visitante
+Carlos · sueldo 1400,00 euros
+Elena · sueldo 1520,00 euros · 10 h extra
+1400.0
+1520.0
+\`\`\``,
+          inicial: `class Persona {
+    private String nombre;
+
+    public Persona(String nombre) { this.nombre = nombre; }
+
+    public String getNombre() { return nombre; }
+
+    @Override
+    public String toString() { return nombre; }
+}
+
+// TODO: class Empleado extends Persona
+// TODO: class Monitor extends Empleado
+
+public class Main {
+    public static void main(String[] args) {
+        Persona p = new Persona("Visitante");
+        Empleado e = new Empleado("Carlos", 1400);
+        Empleado m = new Monitor("Elena", 1400, 10);
+        System.out.println(p);
+        System.out.println(e);
+        System.out.println(m);
+        System.out.println(e.calcularSueldo());
+        System.out.println(m.calcularSueldo());
+    }
+}`,
+          tests: [
+            {
+              out: `Visitante
+Carlos · sueldo 1400,00 euros
+Elena · sueldo 1520,00 euros · 10 h extra
+1400.0
+1520.0`
+            }
+          ],
+          pistas: [
+            "Cada constructor llama al de su clase padre con `super(...)`.",
+            "Fíjate: el `toString` de `Empleado` llama a `calcularSueldo()`, y en un `Monitor` esa llamada ejecuta **la versión del monitor**. Por eso el sueldo que se muestra incluye las horas extra."
+          ],
+          solucion: `class Persona {
+    private String nombre;
+
+    public Persona(String nombre) { this.nombre = nombre; }
+
+    public String getNombre() { return nombre; }
+
+    @Override
+    public String toString() { return nombre; }
+}
+
+class Empleado extends Persona {
+    private double sueldoBase;
+
+    public Empleado(String nombre, double sueldoBase) {
+        super(nombre);
+        this.sueldoBase = sueldoBase;
+    }
+
+    public double calcularSueldo() { return sueldoBase; }
+
+    @Override
+    public String toString() {
+        return super.toString() + " · sueldo " + String.format("%.2f", calcularSueldo()) + " euros";
+    }
+}
+
+class Monitor extends Empleado {
+    private int horasExtra;
+
+    public Monitor(String nombre, double sueldoBase, int horasExtra) {
+        super(nombre, sueldoBase);
+        this.horasExtra = horasExtra;
+    }
+
+    @Override
+    public double calcularSueldo() { return super.calcularSueldo() + 12.0 * horasExtra; }
+
+    @Override
+    public String toString() { return super.toString() + " · " + horasExtra + " h extra"; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Persona p = new Persona("Visitante");
+        Empleado e = new Empleado("Carlos", 1400);
+        Empleado m = new Monitor("Elena", 1400, 10);
+        System.out.println(p);
+        System.out.println(e);
+        System.out.println(m);
+        System.out.println(e.calcularSueldo());
+        System.out.println(m.calcularSueldo());
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 13 · ★★★☆ · Contar sin preguntar… salvo cuando hace falta.** Escribe la clase \`Inventario\`, que **tiene** un array de \`Equipo\`. Su método \`plazasTotales()\` suma las plazas de **solo los kayaks** (el resto de equipos no tiene plazas) y \`contarKayaks()\` cuenta cuántos hay. Aquí sí hay que preguntar por el tipo real: usa \`instanceof\` y, si es un \`Kayak\`, accede a \`getPlazas()\`.
+
+Debe mostrar:
+\`\`\`
+Kayaks: 3
+Plazas: 6
+\`\`\``,
+          inicial: `class Equipo {
+    private String nombre;
+
+    public Equipo(String nombre) { this.nombre = nombre; }
+
+    public String getNombre() { return nombre; }
+}
+
+class Kayak extends Equipo {
+    private int plazas;
+
+    public Kayak(String nombre, int plazas) {
+        super(nombre);
+        this.plazas = plazas;
+    }
+
+    public int getPlazas() { return plazas; }
+}
+
+class Chaleco extends Equipo {
+    public Chaleco(String nombre) { super(nombre); }
+}
+
+// TODO: class Inventario
+
+public class Main {
+    public static void main(String[] args) {
+        Equipo[] equipos = {
+            new Kayak("Kayak individual", 1),
+            new Chaleco("Chaleco adulto"),
+            new Kayak("Kayak doble", 2),
+            new Chaleco("Chaleco niño"),
+            new Kayak("Kayak triple", 3)
+        };
+        Inventario inv = new Inventario(equipos);
+        System.out.println("Kayaks: " + inv.contarKayaks());
+        System.out.println("Plazas: " + inv.plazasTotales());
+    }
+}`,
+          tests: [
+            {
+              out: `Kayaks: 3
+Plazas: 6`
+            }
+          ],
+          pistas: [
+            "`if (e instanceof Kayak k) { ... k.getPlazas() ... }` comprueba el tipo y te da la variable `k` ya convertida a `Kayak`.",
+            "Una variable de tipo `Equipo` **no ve** `getPlazas()` aunque el objeto sea un kayak: por eso hace falta la conversión."
+          ],
+          solucion: `class Equipo {
+    private String nombre;
+
+    public Equipo(String nombre) { this.nombre = nombre; }
+
+    public String getNombre() { return nombre; }
+}
+
+class Kayak extends Equipo {
+    private int plazas;
+
+    public Kayak(String nombre, int plazas) {
+        super(nombre);
+        this.plazas = plazas;
+    }
+
+    public int getPlazas() { return plazas; }
+}
+
+class Chaleco extends Equipo {
+    public Chaleco(String nombre) { super(nombre); }
+}
+
+class Inventario {
+    private Equipo[] equipos;
+
+    public Inventario(Equipo[] equipos) { this.equipos = equipos; }
+
+    public int contarKayaks() {
+        int cuenta = 0;
+        for (Equipo e : equipos) {
+            if (e instanceof Kayak) {
+                cuenta++;
+            }
+        }
+        return cuenta;
+    }
+
+    public int plazasTotales() {
+        int total = 0;
+        for (Equipo e : equipos) {
+            if (e instanceof Kayak k) {
+                total += k.getPlazas();
+            }
+        }
+        return total;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Equipo[] equipos = {
+            new Kayak("Kayak individual", 1),
+            new Chaleco("Chaleco adulto"),
+            new Kayak("Kayak doble", 2),
+            new Chaleco("Chaleco niño"),
+            new Kayak("Kayak triple", 3)
+        };
+        Inventario inv = new Inventario(equipos);
+        System.out.println("Kayaks: " + inv.contarKayaks());
+        System.out.println("Plazas: " + inv.plazasTotales());
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 14 · ★★★☆ · Una excursión nueva sin tocar nada.** Es la gran ventaja del polimorfismo: añadir un tipo **sin modificar el código que ya funciona**. La clase \`Agenda\` suma el precio de todas sus excursiones sin saber de qué tipo son. Escribe \`ExcursionBuceo\` (hereda de \`Excursion\`; **suma 15 euros por persona** por el alquiler de la botella) y añade al \`main\` una excursión de buceo a la agenda. **No toques \`Agenda\` ni \`Excursion\`.**
+
+Debe mostrar:
+\`\`\`
+86.0
+196.0
+\`\`\``,
+          inicial: `import java.util.ArrayList;
+
+class Excursion {
+    private String nombre;
+    private double precioPersona;
+
+    public Excursion(String nombre, double precioPersona) {
+        this.nombre = nombre;
+        this.precioPersona = precioPersona;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int personas) { return precioPersona * personas; }
+}
+
+class Agenda {
+    private ArrayList<Excursion> excursiones = new ArrayList<>();
+
+    public void anadir(Excursion e) { excursiones.add(e); }
+
+    public double totalPara(int personas) {
+        double total = 0;
+        for (Excursion e : excursiones) {
+            total += e.calcularPrecio(personas);
+        }
+        return total;
+    }
+}
+
+// TODO: class ExcursionBuceo
+
+public class Main {
+    public static void main(String[] args) {
+        Agenda agenda = new Agenda();
+        agenda.anadir(new Excursion("Paseo en barco", 25.0));
+        agenda.anadir(new Excursion("Snorkel", 18.0));
+        System.out.println(agenda.totalPara(2));
+        // TODO: añade a la agenda un buceo de 40 euros por persona y vuelve a mostrar el total para 2 personas
+    }
+}`,
+          tests: [
+            {
+              out: `86.0
+196.0`
+            }
+          ],
+          pistas: [
+            "`ExcursionBuceo` es casi idéntica a `ExcursionKayak` del ejercicio 6: constructor con `super` y `calcularPrecio` sobrescrito.",
+            "Para el total con buceo: 2 × (25 + 18 + 40 + 15)."
+          ],
+          solucion: `import java.util.ArrayList;
+
+class Excursion {
+    private String nombre;
+    private double precioPersona;
+
+    public Excursion(String nombre, double precioPersona) {
+        this.nombre = nombre;
+        this.precioPersona = precioPersona;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double calcularPrecio(int personas) { return precioPersona * personas; }
+}
+
+class Agenda {
+    private ArrayList<Excursion> excursiones = new ArrayList<>();
+
+    public void anadir(Excursion e) { excursiones.add(e); }
+
+    public double totalPara(int personas) {
+        double total = 0;
+        for (Excursion e : excursiones) {
+            total += e.calcularPrecio(personas);
+        }
+        return total;
+    }
+}
+
+class ExcursionBuceo extends Excursion {
+    public ExcursionBuceo(String nombre, double precioPersona) {
+        super(nombre, precioPersona);
+    }
+
+    @Override
+    public double calcularPrecio(int personas) {
+        return super.calcularPrecio(personas) + 15.0 * personas;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Agenda agenda = new Agenda();
+        agenda.anadir(new Excursion("Paseo en barco", 25.0));
+        agenda.anadir(new Excursion("Snorkel", 18.0));
+        System.out.println(agenda.totalPara(2));
+        agenda.anadir(new ExcursionBuceo("Buceo en la reserva", 40.0));
+        System.out.println(agenda.totalPara(2));
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 15 · ★★★☆ · Cuidado con compartir objetos.** En la composición, guardar el objeto que te pasan significa **compartirlo** (ejercicio 4). A veces eso no es lo que queremos: una reserva debe conservar los datos que tenía el cliente **cuando se hizo**. Escribe el **constructor de copia** \`Cliente(Cliente otro)\` y haz que \`Reserva\` guarde una **copia** del cliente, no el original. Así, cuando el cliente sube de categoría, las reservas antiguas no cambian.
+
+Debe mostrar:
+\`\`\`
+60.0
+54.0
+\`\`\``,
+          inicial: `class Cliente {
+    private String nombre;
+    private boolean socio;
+
+    public Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+
+    // TODO: constructor de copia Cliente(Cliente otro)
+
+    public String getNombre() { return nombre; }
+    public boolean isSocio() { return socio; }
+    public void setSocio(boolean socio) { this.socio = socio; }
+}
+
+class Reserva {
+    private Cliente cliente;
+    private int personas;
+
+    public Reserva(Cliente cliente, int personas) {
+        this.cliente = cliente;     // TODO: guardar una copia
+        this.personas = personas;
+    }
+
+    public double calcularTotal() {
+        double total = 30.0 * personas;
+        return cliente.isSocio() ? total * 0.90 : total;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente ana = new Cliente("Ana", false);
+        Reserva antigua = new Reserva(ana, 2);
+        ana.setSocio(true);
+        Reserva nueva = new Reserva(ana, 2);
+        System.out.println(antigua.calcularTotal());
+        System.out.println(nueva.calcularTotal());
+    }
+}`,
+          tests: [
+            {
+              out: `60.0
+54.0`
+            }
+          ],
+          pistas: [
+            "Un constructor de copia recibe un objeto de **su propia clase** y copia sus propiedades: `this(otro.nombre, otro.socio);`.",
+            "En `Reserva`: `this.cliente = new Cliente(cliente);`. Ahora la reserva tiene **su propio** cliente."
+          ],
+          solucion: `class Cliente {
+    private String nombre;
+    private boolean socio;
+
+    public Cliente(String nombre, boolean socio) {
+        this.nombre = nombre;
+        this.socio = socio;
+    }
+
+    public Cliente(Cliente otro) {
+        this(otro.nombre, otro.socio);
+    }
+
+    public String getNombre() { return nombre; }
+    public boolean isSocio() { return socio; }
+    public void setSocio(boolean socio) { this.socio = socio; }
+}
+
+class Reserva {
+    private Cliente cliente;
+    private int personas;
+
+    public Reserva(Cliente cliente, int personas) {
+        this.cliente = new Cliente(cliente);
+        this.personas = personas;
+    }
+
+    public double calcularTotal() {
+        double total = 30.0 * personas;
+        return cliente.isSocio() ? total * 0.90 : total;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Cliente ana = new Cliente("Ana", false);
+        Reserva antigua = new Reserva(ana, 2);
+        ana.setSocio(true);
+        Reserva nueva = new Reserva(ana, 2);
+        System.out.println(antigua.calcularTotal());
+        System.out.println(nueva.calcularTotal());
+    }
+}`
+        },
+        {
+          t: "texto",
+          md: `## Nivel 4 · Diseño propio ★★★★
+Aquí solo tienes **el problema y la salida esperada**. Tú decides qué clases hacen falta, qué relación hay entre ellas y qué métodos tienen. Empieza **siempre por el dibujo** de las clases y las relaciones.`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 16 · ★★★★ · El puerto deportivo.** El puerto de Mazarrón cobra un **amarre mensual** a cada embarcación: 20 euros por metro de eslora. Un **velero** suma 2 euros por metro de altura de mástil; una **lancha** suma 0,1 euros por caballo de potencia. Cada embarcación **tiene un** propietario (nombre y teléfono). Un \`Puerto\` **tiene muchas** embarcaciones. Diseña las clases \`Propietario\`, \`Embarcacion\`, \`Velero\`, \`Lancha\` y \`Puerto\` para que el \`main\` funcione. \`informe()\` muestra una línea por embarcación con el formato \`nombre (propietario): importe\` y \`contarDe(p)\` cuenta las embarcaciones de un propietario.
+
+Debe mostrar:
+\`\`\`
+Brisa (Ana Ruiz): 214,00
+Gaviota (Luis Gil): 135,00
+Tritón (Ana Ruiz): 159,00
+Total mensual: 508,00 euros
+Embarcaciones de Ana: 2
+\`\`\``,
+          inicial: `public class Main {
+    public static void main(String[] args) {
+        Propietario ana = new Propietario("Ana Ruiz", "600111222");
+        Propietario luis = new Propietario("Luis Gil", "600333444");
+        Puerto puerto = new Puerto("Mazarrón");
+        puerto.anadir(new Velero("Brisa", 9.5, ana, 12.0));
+        puerto.anadir(new Lancha("Gaviota", 6.0, luis, 150));
+        puerto.anadir(new Lancha("Tritón", 7.5, ana, 90));
+        puerto.informe();
+        System.out.printf("Total mensual: %.2f euros%n", puerto.totalMensual());
+        System.out.println("Embarcaciones de Ana: " + puerto.contarDe(ana));
+    }
+}`,
+          tests: [
+            {
+              out: `Brisa (Ana Ruiz): 214,00
+Gaviota (Luis Gil): 135,00
+Tritón (Ana Ruiz): 159,00
+Total mensual: 508,00 euros
+Embarcaciones de Ana: 2`
+            }
+          ],
+          pistas: [
+            "Relaciones: `Velero` y `Lancha` **son** `Embarcacion` (herencia); una `Embarcacion` **tiene un** `Propietario` y un `Puerto` **tiene muchas** `Embarcacion` (composición).",
+            "El constructor de las subclases recibe también los datos de la base: `Velero(nombre, eslora, propietario, alturaMastil)` y llama a `super(nombre, eslora, propietario)`.",
+            "Para `contarDe` compara la referencia: `e.getPropietario() == p` (es el mismo objeto)."
+          ],
+          solucion: `import java.util.ArrayList;
+
+class Propietario {
+    private String nombre;
+    private String telefono;
+
+    public Propietario(String nombre, String telefono) {
+        this.nombre = nombre;
+        this.telefono = telefono;
+    }
+
+    public String getNombre() { return nombre; }
+    public String getTelefono() { return telefono; }
+}
+
+class Embarcacion {
+    private String nombre;
+    private double eslora;
+    private Propietario propietario;
+
+    public Embarcacion(String nombre, double eslora, Propietario propietario) {
+        this.nombre = nombre;
+        this.eslora = eslora;
+        this.propietario = propietario;
+    }
+
+    public String getNombre() { return nombre; }
+    public Propietario getPropietario() { return propietario; }
+
+    public double calcularAmarre() { return 20.0 * eslora; }
+}
+
+class Velero extends Embarcacion {
+    private double alturaMastil;
+
+    public Velero(String nombre, double eslora, Propietario propietario, double alturaMastil) {
+        super(nombre, eslora, propietario);
+        this.alturaMastil = alturaMastil;
+    }
+
+    @Override
+    public double calcularAmarre() { return super.calcularAmarre() + 2.0 * alturaMastil; }
+}
+
+class Lancha extends Embarcacion {
+    private int potencia;
+
+    public Lancha(String nombre, double eslora, Propietario propietario, int potencia) {
+        super(nombre, eslora, propietario);
+        this.potencia = potencia;
+    }
+
+    @Override
+    public double calcularAmarre() { return super.calcularAmarre() + 0.1 * potencia; }
+}
+
+class Puerto {
+    private String nombre;
+    private ArrayList<Embarcacion> embarcaciones = new ArrayList<>();
+
+    public Puerto(String nombre) { this.nombre = nombre; }
+
+    public void anadir(Embarcacion e) { embarcaciones.add(e); }
+
+    public void informe() {
+        for (Embarcacion e : embarcaciones) {
+            System.out.printf("%s (%s): %.2f%n", e.getNombre(), e.getPropietario().getNombre(), e.calcularAmarre());
+        }
+    }
+
+    public double totalMensual() {
+        double total = 0;
+        for (Embarcacion e : embarcaciones) {
+            total += e.calcularAmarre();
+        }
+        return total;
+    }
+
+    public int contarDe(Propietario p) {
+        int cuenta = 0;
+        for (Embarcacion e : embarcaciones) {
+            if (e.getPropietario() == p) {
+                cuenta++;
+            }
+        }
+        return cuenta;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Propietario ana = new Propietario("Ana Ruiz", "600111222");
+        Propietario luis = new Propietario("Luis Gil", "600333444");
+        Puerto puerto = new Puerto("Mazarrón");
+        puerto.anadir(new Velero("Brisa", 9.5, ana, 12.0));
+        puerto.anadir(new Lancha("Gaviota", 6.0, luis, 150));
+        puerto.anadir(new Lancha("Tritón", 7.5, ana, 90));
+        puerto.informe();
+        System.out.printf("Total mensual: %.2f euros%n", puerto.totalMensual());
+        System.out.println("Embarcaciones de Ana: " + puerto.contarDe(ana));
+    }
+}`
+        },
+        {
+          t: "ejecuta",
+          p: `**Ejercicio 17 · ★★★★ · Rediseña este código.** Este código funciona, pero está escrito **sin objetos**: un único tipo \`Equipo\` con un texto \`tipo\` y un \`if\` por cada tipo en cada método. Añadir un tipo nuevo obliga a tocar todos los métodos. **Rediséñalo** con herencia y polimorfismo: una clase base \`Equipo\` y las subclases \`Kayak\` y \`Tabla\`, sin ningún \`if (tipo...)\`. Los constructores nuevos son \`new Equipo(nombre, precioHora)\`, \`new Kayak(nombre, precioHora, plazas)\` y \`new Tabla(nombre, precioHora)\`; **la salida debe ser idéntica** a la del código original.
+
+Debe mostrar:
+\`\`\`
+Chaleco: 10.5
+Kayak doble (kayak de 2 plazas): 30.0
+Tabla grande (tabla de paddle surf): 41.0
+\`\`\``,
+          inicial: `class Equipo {
+    String tipo;
+    String nombre;
+    double precioHora;
+    int plazas;
+
+    Equipo(String tipo, String nombre, double precioHora, int plazas) {
+        this.tipo = tipo;
+        this.nombre = nombre;
+        this.precioHora = precioHora;
+        this.plazas = plazas;
+    }
+
+    double precio(int horas) {
+        if (tipo.equals("KAYAK")) {
+            return precioHora * horas + 2.0 * (plazas - 1) * horas;
+        } else if (tipo.equals("TABLA")) {
+            return precioHora * horas + 5.0;
+        } else {
+            return precioHora * horas;
+        }
+    }
+
+    String describir() {
+        if (tipo.equals("KAYAK")) {
+            return nombre + " (kayak de " + plazas + " plazas)";
+        } else if (tipo.equals("TABLA")) {
+            return nombre + " (tabla de paddle surf)";
+        } else {
+            return nombre;
+        }
+    }
+}
+
+// TODO: rediseña las clases Equipo, Kayak y Tabla (y borra la versión con \`tipo\`).
+// Este main ya usa los constructores nuevos:
+public class Main {
+    public static void main(String[] args) {
+        Equipo[] equipos = {
+            new Equipo("Chaleco", 3.5),
+            new Kayak("Kayak doble", 8.0, 2),
+            new Tabla("Tabla grande", 12.0)
+        };
+        for (Equipo e : equipos) {
+            System.out.println(e.describir() + ": " + e.precio(3));
+        }
+    }
+}`,
+          tests: [
+            {
+              out: `Chaleco: 10.5
+Kayak doble (kayak de 2 plazas): 30.0
+Tabla grande (tabla de paddle surf): 41.0`
+            }
+          ],
+          pistas: [
+            "La clase `Equipo` conserva solo lo común (nombre, precio por hora) y la versión «normal» de `precio` y `describir`.",
+            "Cada subclase sobrescribe lo que cambia y reutiliza la base con `super`.",
+            "El nombre es privado en la base: necesitarás un getter para usarlo en `describir` de las subclases (o hacerlo `protected`)."
+          ],
+          solucion: `class Equipo {
+    private String nombre;
+    private double precioHora;
+
+    public Equipo(String nombre, double precioHora) {
+        this.nombre = nombre;
+        this.precioHora = precioHora;
+    }
+
+    public String getNombre() { return nombre; }
+
+    public double precio(int horas) { return precioHora * horas; }
+
+    public String describir() { return nombre; }
+}
+
+class Kayak extends Equipo {
+    private int plazas;
+
+    public Kayak(String nombre, double precioHora, int plazas) {
+        super(nombre, precioHora);
+        this.plazas = plazas;
+    }
+
+    @Override
+    public double precio(int horas) { return super.precio(horas) + 2.0 * (plazas - 1) * horas; }
+
+    @Override
+    public String describir() { return getNombre() + " (kayak de " + plazas + " plazas)"; }
+}
+
+class Tabla extends Equipo {
+    public Tabla(String nombre, double precioHora) { super(nombre, precioHora); }
+
+    @Override
+    public double precio(int horas) { return super.precio(horas) + 5.0; }
+
+    @Override
+    public String describir() { return getNombre() + " (tabla de paddle surf)"; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Equipo[] equipos = {
+            new Equipo("Chaleco", 3.5),
+            new Kayak("Kayak doble", 8.0, 2),
+            new Tabla("Tabla grande", 12.0)
+        };
+        for (Equipo e : equipos) {
+            System.out.println(e.describir() + ": " + e.precio(3));
+        }
+    }
+}`
+        },
+        {
+          t: "abierta",
+          p: `**Ejercicio 18 · ★★★★ · Diseña en papel.** Lee este enunciado y escribe: (a) las **clases** que necesitas; (b) las **propiedades** principales de cada una; (c) qué relaciones son de **herencia** y cuáles de **composición**, con la frase que lo justifica; y (d) qué método **sobrescribirías** y por qué.
+
+> *Náutica Bahía organiza cursos. Hay cursos de vela y cursos de buceo. Todo curso tiene un nombre, una duración en horas y un precio por alumno. El curso de vela exige un título de patrón y el de buceo exige un certificado médico. Cada curso tiene un instructor (con nombre y teléfono) y varios alumnos (con nombre y fecha de nacimiento). Al matricular un alumno se calcula su precio: los de buceo pagan 30 euros más por el material.*`,
+          modelo: `(a) Clases: Curso, CursoVela, CursoBuceo, Instructor, Alumno (y, si se quiere, Matricula).
+(b) Curso: nombre, duracionHoras, precioAlumno, instructor, lista de alumnos. CursoVela: requiere título de patrón. CursoBuceo: exige certificado médico. Instructor: nombre, teléfono. Alumno: nombre, fechaNacimiento.
+(c) Herencia: un curso de vela es un curso; un curso de buceo es un curso. Composición: un curso tiene un instructor; un curso tiene varios alumnos (lista). Un curso NO es un instructor ni un alumno.
+(d) Sobrescribiría calcularPrecioMatricula() en CursoBuceo: llamaría a super.calcularPrecioMatricula() y sumaría 30 euros del material. Los cursos de vela usarían el de la clase base. Así, el código que recorre una lista de cursos no necesita preguntar de qué tipo es cada uno.`,
+          rubrica: [
+            "Identifica Curso, CursoVela, CursoBuceo, Instructor y Alumno",
+            "Indica herencia entre los cursos concretos y Curso, justificada con «es un»",
+            "Indica composición entre Curso e Instructor y entre Curso y Alumno, justificada con «tiene un»",
+            "Propone sobrescribir el cálculo del precio en CursoBuceo reutilizando el de la base"
+          ],
+          minPalabras: 60
+        },
+        {
+          t: "abierta",
+          p: "**Ejercicio 19 · ★★★★ · Explícaselo a un compañero.** Un compañero te dice: «para qué complicarse con subclases, si basta con un `if (tipo.equals(\"KAYAK\"))` en cada método». Responde con un **ejemplo concreto** de qué ocurre en cada enfoque cuando Náutica Bahía añade un nuevo tipo de equipo (por ejemplo, un *jet ski*), y explica cuándo **sí** sería mejor usar composición en lugar de herencia.",
+          modelo: `Con un if por tipo, cada vez que aparece un tipo nuevo (el jet ski) hay que buscar todos los métodos que tienen un if sobre el tipo (precio, describir, aCsv...) y añadir otra rama; es fácil olvidar uno y el compilador no avisa, y todo el código se vuelve largo y frágil. Con herencia y polimorfismo, basta con escribir una subclase JetSki que sobrescriba lo que cambia; el código que ya funciona (por ejemplo, el que recorre un array de Equipo y llama a precio()) no se toca. Se añade código nuevo en lugar de modificar el que ya funciona.
+Composición es mejor que herencia cuando no se cumple la frase «es un»: una Reserva tiene un Cliente, pero no es un Cliente. También cuando solo se quiere reutilizar una funcionalidad sin ser de ese tipo, o cuando el comportamiento puede cambiar en ejecución (cambiar el cliente de una reserva). Ante la duda, composición: es más flexible y acopla menos.`,
+          rubrica: [
+            "Explica el problema de añadir un tipo nuevo con if por tipo (hay que tocar muchos sitios)",
+            "Explica que con herencia y polimorfismo basta con una subclase nueva",
+            "Da un criterio para elegir composición (relación «tiene un», flexibilidad)"
+          ],
+          minPalabras: 60
+        }
+      ],
+      tutor: {
+        intro: "Repasemos lo esencial de **composición y herencia** antes de practicar.",
+        inicial: [
+          {
+            p: "¿Qué relación hay entre `Reserva` y `Cliente`?",
+            o: ["Herencia", "Composición", "Ninguna", "Sobrecarga"],
+            c: 1,
+            e: "Una reserva *tiene un* cliente."
+          },
+          {
+            p: "¿Qué hace `super.calcularPrecio(horas)`?",
+            o: [
+              "Llama a la versión de la clase base",
+              "Crea un objeto",
+              "Borra el método",
+              "Llama al constructor"
+            ],
+            c: 0,
+            e: "Reutiliza el cálculo de la base."
+          },
+          {
+            p: "Si dos reservas reciben el mismo `Cliente`…",
+            o: ["Tienen copias distintas", "Comparten el mismo objeto", "Falla", "Se fusionan"],
+            c: 1,
+            e: "Se guarda la referencia, no una copia."
+          }
+        ],
+        pasos: [
+          {
+            titulo: "«Es un» y «tiene un»",
+            cubre: [0],
+            explica: "Si «A es un B», herencia (`extends`). Si «A tiene un B», composición: una propiedad de tipo `B`. Ante la duda, composición.",
+            pregunta: {
+              p: "Un `Alquiler` y un `Equipo`: ¿qué relación?",
+              o: [
+                "Alquiler es un Equipo",
+                "Alquiler tiene un Equipo",
+                "Equipo tiene un Alquiler siempre",
+                "Ninguna"
+              ],
+              c: 1,
+              e: "Un alquiler *tiene un* equipo."
+            },
+            extra: "Prueba con la frase en voz alta: «un kayak es un equipo» suena natural; «un alquiler es un equipo» suena raro."
+          },
+          {
+            titulo: "Sobrescribir y polimorfismo",
+            cubre: [1, 2],
+            explica: "Una subclase sobrescribe (`@Override`) lo que cambia y reutiliza la base con `super`. Al llamar al método **se ejecuta la versión del objeto real**: el código que recorre un array de `Equipo` no necesita saber qué tipo es cada uno.",
+            ejemplo: {
+              code: `class Equipo {
+    public double precio(int h) { return 3.5 * h; }
+}
+class Kayak extends Equipo {
+    @Override
+    public double precio(int h) { return super.precio(h) + 2.0 * h; }
+}
+public class Main {
+    public static void main(String[] args) {
+        Equipo[] v = { new Equipo(), new Kayak() };
+        for (Equipo e : v) {
+            System.out.println(e.precio(2));
+        }
+    }
+}`,
+              ejecutable: true,
+              titulo: "Polimorfismo"
+            },
+            pregunta: {
+              p: "¿Qué versión de `precio` se ejecuta para el `Kayak`?",
+              o: ["La de `Equipo`", "La de `Kayak`", "Ninguna", "Las dos a la vez"],
+              c: 1,
+              e: "La del objeto real."
+            }
+          }
+        ],
+        reto: {
+          p: "**Reto final.** Escribe `Equipo` (nombre y precio por hora; `precio(int horas)`) y `Chaleco extends Equipo` con un 20 % de descuento en `precio`. Muestra el precio de 2 horas de un equipo de 10 euros/hora y de un chaleco de 10 euros/hora.",
+          inicial: `// TODO: clases Equipo y Chaleco
+public class Main {
+    public static void main(String[] args) {
+        Equipo a = new Equipo("Tabla", 10.0);
+        Equipo b = new Chaleco("Chaleco", 10.0);
+        System.out.println(a.precio(2));
+        System.out.println(b.precio(2));
+    }
+}`,
+          tests: [
+            {
+              out: `20.0
+16.0`
+            }
+          ],
+          solucion: `class Equipo {
+    private String nombre;
+    private double precioHora;
+
+    public Equipo(String nombre, double precioHora) {
+        this.nombre = nombre;
+        this.precioHora = precioHora;
+    }
+
+    public double precio(int horas) { return precioHora * horas; }
+}
+
+class Chaleco extends Equipo {
+    public Chaleco(String nombre, double precioHora) { super(nombre, precioHora); }
+
+    @Override
+    public double precio(int horas) { return super.precio(horas) * 0.80; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Equipo a = new Equipo("Tabla", 10.0);
+        Equipo b = new Chaleco("Chaleco", 10.0);
+        System.out.println(a.precio(2));
+        System.out.println(b.precio(2));
+    }
+}`,
+          pistas: ["`class Chaleco extends Equipo` y `super.precio(horas) * 0.80`."]
+        }
+      }
+    },
+
+    {
       id: "ut4-paquetes",
       titulo: "Paquetes y librerías de clases",
       resumen: "Organizar las clases en paquetes, importarlas y empaquetarlas en un `.jar`.",
@@ -4850,6 +6719,111 @@ public class Main {
       o: ["Herencia", "Composición", "Sobrecarga", "Polimorfismo"],
       c: 1,
       e: "«Tiene un»."
+    },
+    {
+      sec: "ut4-taller",
+      p: "Una `Reserva` guarda el `Cliente` que la hizo. ¿Qué relación es?",
+      o: ["Herencia (es un)", "Composición (tiene un)", "Sobrecarga", "Ninguna"],
+      c: 1,
+      e: "Una reserva *tiene un* cliente; no *es* un cliente."
+    },
+    {
+      sec: "ut4-taller",
+      p: "Un `Kayak` extiende `Equipo`. ¿Qué relación es?",
+      o: ["Composición (tiene un)", "Herencia (es un)", "Asociación estática", "Ninguna"],
+      c: 1,
+      e: "Un kayak *es un* equipo."
+    },
+    {
+      sec: "ut4-taller",
+      p: "Ante la duda entre herencia y composición, ¿qué conviene elegir?",
+      o: ["Siempre herencia", "Composición", "Ninguna: una clase estática", "Copiar el código"],
+      c: 1,
+      e: "La composición es más flexible y acopla menos; la herencia solo cuando la frase «es un» es natural."
+    },
+    {
+      sec: "ut4-taller",
+      p: "¿Para qué sirve `@Override`?",
+      o: [
+        "Para ocultar un método",
+        "Para que el compilador compruebe que de verdad sobrescribes un método de la base",
+        "Para hacer el método estático",
+        "Para llamar a `super`"
+      ],
+      c: 1,
+      e: "Si el nombre o los parámetros no coinciden, da error de compilación en lugar de crear un método distinto."
+    },
+    {
+      sec: "ut4-taller",
+      p: "Una subclase escribe `calcularTarifasHora()` (con una `s` de más) en lugar de `calcularTarifaHora()` y no usa `@Override`. Al llamar a `calcularTarifaHora()` sobre un objeto de esa subclase…",
+      o: [
+        "Se ejecuta el de la subclase",
+        "Se ejecuta el de la clase base: el de la subclase es un método distinto",
+        "No compila",
+        "Lanza una excepción"
+      ],
+      c: 1,
+      e: "Sin `@Override`, el error de nombre crea un método nuevo y el polimorfismo no actúa."
+    },
+    {
+      sec: "ut4-taller",
+      p: "¿Qué línea debe ser la primera de un constructor de una subclase?",
+      o: [
+        "`this.x = x;`",
+        "La llamada a `super(...)` (si la clase base no tiene constructor sin argumentos)",
+        "Un `return`",
+        "Un `if`"
+      ],
+      c: 1,
+      e: "`super(...)` inicializa la parte heredada antes que la propia."
+    },
+    {
+      sec: "ut4-taller",
+      p: "En `Equipo[] equipos` hay un `Kayak` y un `Chaleco`. ¿Cómo se calcula el precio de todos?",
+      o: [
+        "Con un `if` por tipo",
+        "Llamando a `e.calcularPrecio(h)` en un bucle: cada objeto ejecuta su versión",
+        "Es imposible mezclar tipos",
+        "Con `instanceof` siempre"
+      ],
+      c: 1,
+      e: "Es el polimorfismo: no hace falta preguntar por el tipo."
+    },
+    {
+      sec: "ut4-taller",
+      p: "Una `Reserva` recibe un `Cliente` en el constructor y hace `this.cliente = cliente;`. Si luego se modifica ese cliente desde fuera…",
+      o: [
+        "La reserva no se entera",
+        "La reserva ve el cambio: comparte el mismo objeto",
+        "Se lanza una excepción",
+        "Se copia el objeto automáticamente"
+      ],
+      c: 1,
+      e: "Se guarda una referencia, no una copia. Para evitarlo, hace falta un constructor de copia."
+    },
+    {
+      sec: "ut4-taller",
+      p: "Para llamar a `getPlazas()`, que solo tiene `Kayak`, sobre un elemento de un `Equipo[]`, hay que…",
+      o: [
+        "Llamarlo directamente",
+        "Comprobar con `instanceof Kayak` y convertir",
+        "Declararlo en `Object`",
+        "Hacerlo `static`"
+      ],
+      c: 1,
+      e: "La variable es de tipo `Equipo`, que no ve `getPlazas()`."
+    },
+    {
+      sec: "ut4-taller",
+      p: "La ventaja principal de añadir una subclase nueva (por ejemplo, un jet ski) frente a un `if` por tipo es que…",
+      o: [
+        "Ocupa menos memoria",
+        "No hay que modificar el código existente que ya funciona",
+        "No necesita constructor",
+        "Es más rápido siempre"
+      ],
+      c: 1,
+      e: "El código que usa la clase base sigue funcionando con la subclase nueva."
     }
   ]
 });
